@@ -1,2 +1,3 @@
-# advent-of-code-2018
-My Advent of Code 2018 solutions
+# Advent of Code 2018
+
+### Update #1: It's that time of the year again.. So let's go!!
