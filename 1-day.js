@@ -1,11 +1,6 @@
-const http = require('axios')
+const { getInput } = require('./utils')
 
-async function getInput(url) {
-    const response = await http.get(url, { responseType: 'text' })
-    return response.data
-}
-
-(async () => {
+async function main() {
     const data = await getInput('https://pastebin.com/raw/EEbJZiEh')
     let input = data.split(/\r?\n/)
 
@@ -29,4 +24,6 @@ async function getInput(url) {
     }
 
     console.log(frequency)
-})()
+}
+
+main()
