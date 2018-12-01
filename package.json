@@ -1,0 +1,27 @@
+{
+  "name": "advent-of-code-2018",
+  "version": "1.0.0",
+  "description": "My Advent of Code 2018 solutions",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/capJavert/advent-of-code-2018.git"
+  },
+  "keywords": [
+    "advent-of-code",
+    "javascript",
+    "node"
+  ],
+  "author": "capJavert",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/capJavert/advent-of-code-2018/issues"
+  },
+  "homepage": "https://github.com/capJavert/advent-of-code-2018#readme",
+  "dependencies": {
+    "axios": "^0.18.0"
+  }
+}
