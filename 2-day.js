@@ -1,39 +1,33 @@
 const { getInput } = require('./utils')
 
-function checksum(str){
-    let count = { two: 0, three: 0 }
-    const repetitions = {}
-    str.split('').forEach(c => {
-        repetitions[c] = repetitions[c] ? repetitions[c] += 1 : 1
-        if (repetitions[c] === 2) {
-            count.two += 1
-        }
-        if (repetitions[c] === 3) {
-            count.two -= 1
-            count.three += 1
-        }
-        if (repetitions[c] > 3) {
-            count.three -= 1
-        }
-    })
+function getDiff(a, b){
+    const diff = []
 
-    return count
+    for (let i = 0; i < a.length; i += 1) {
+        if (a[i] != b[i]) {
+            diff.push(i)
+        }
+    }
+
+    return diff
 }
 
 async function main() {
     const data = await getInput('https://pastebin.com/raw/B5PMXVxC')
     let input = data.split(/\r?\n/)
 
-    let twoLetterCount = 0
-    let threeLetterCount = 0
-
-    input.forEach(id => {
-        const { two, three } = checksum(id)
-        twoLetterCount += two ? 1 : 0
-        threeLetterCount += three ? 1 : 0
-    })
-
-    console.log(twoLetterCount * threeLetterCount)
+    try {
+        input.forEach(a => {
+            input.forEach(b => {
+                const diff = getDiff(a, b)
+                if (diff.length === 1) {
+                    throw Error(a.substr(0, diff[0]) + a.substr(diff[0] + 1, a.length - 1))
+                }
+            })
+        })
+    } catch (e) {
+        console.log(e.message)
+    }
 }
 
 main()
