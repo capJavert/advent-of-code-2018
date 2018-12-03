@@ -24,7 +24,8 @@ function getRect(entry) {
         x: +data[2].split(',')[0] + 1,
         y: +data[2].split(',')[1].replace(':', '') + 1,
         width: +data[3].split('x')[0],
-        height: +data[3].split('x')[1]
+        height: +data[3].split('x')[1],
+        overlaps: []
     }
 }
 
@@ -32,33 +33,26 @@ async function main() {
     const data = await getInput('https://pastebin.com/raw/Gw8QMePU')
     let input = data.split(/\r?\n/)
 
-    const overlaps = {}
+    const rects = []
     input.forEach(entry1 => {
         const rect1 = getRect(entry1)
 
         input.forEach(entry2 => {
             const rect2 = getRect(entry2)
             const overlapRect = overlap(rect1, rect2)
-            if (rect1.id !== rect2.id && !overlaps[`${rect2.id}:${rect1.id}`] && overlapRect) {
-                overlaps[`${rect1.id}:${rect2.id}`] = overlapRect
+            if (rect1.id !== rect2.id && overlapRect) {
+                rect1.overlaps.push(overlapRect)
             }
         })
+
+        rects.push(rect1)
     })
 
-    const conflicts = {}
-    Object.keys(overlaps).forEach(key => {
-        const conflict = overlaps[key]
-        for (let i = 0; i < conflict.width; i++) {
-            for (let j = 0; j < conflict.height; j++) {
-                const conflictId = `${i + conflict.x}:${j + conflict.y}`
-                if (!conflicts[conflictId]) {
-                    conflicts[conflictId] = true
-                }
-            }
+    rects.forEach(rect => {
+        if (!rect.overlaps.length) {
+            console.log(rect.id)
         }
     })
-
-    console.log(Object.keys(conflicts).length)
 }
 
 main()
