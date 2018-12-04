@@ -42,8 +42,8 @@ async function main() {
                 }
                 guard.asleep += Math.round((((record.timestamp - guard.lastTs) % 86400000) % 3600000) / 60000)
 
-                if (guard.asleep > sleepyGuard.asleep) {
-                    sleepyGuard = { id: guardId, asleep: guard.asleep }
+                if (guard.sleepyMinute.asleep > sleepyGuard.asleep) {
+                    sleepyGuard = { id: guardId, asleep: guard.sleepyMinute.asleep }
                 }
                 break
         }
