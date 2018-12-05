@@ -14,16 +14,25 @@ async function main() {
         return acc
     }, ''))
 
-    while (true) {
-        const length = input.length
-        input = input.replace(regex, '')
+    let minLength = Infinity
+    units.forEach(unit => {
+        const tempRegex = new RegExp(`${unit}|${unit.toUpperCase()}`, 'g')
+        let temp = input.replace(tempRegex, '')
 
-        if (length === input.length) {
-            break
+        while (true) {
+            const length = temp.length
+            temp = temp.replace(regex, '')
+
+            if (length === temp.length) {
+                break
+            }
         }
-    }
 
-    console.log(input.length)
+        if (temp.length < minLength) {
+            minLength = temp.length
+            console.log(minLength)
+        }
+    })
 }
 
 main()
