@@ -33,69 +33,21 @@ async function main() {
 
     const bound = Math.max(maxX, maxY) + 1
 
-    const grid = []
+    let safeRegionSize = 0
     for (let i = 0; i < bound; i += 1) {
-        grid[i] = []
-
         for (let j = 0; j < bound; j += 1) {
-            grid[i][j] = { id: '.', distance: Infinity }
+            let distanceSum = 0
             for ([index, { x, y }] of coordinates.entries()) {
-                if (x === j && y === i) {
-                    grid[i][j] = {
-                        id: `${index}`,
-                        distance: -1
-                    }
-                    continue
-                }
+                distanceSum += doctorDistance(x, y, j, i)
+            }
 
-                const distance = doctorDistance(x, y, j, i)
-
-                if (grid[i][j].distance > distance) {
-                    grid[i][j] = {
-                        id: `${index}`,
-                        distance
-                    }
-                } else if (grid[i][j].distance === distance) {
-                    grid[i][j] = {
-                        id: '.',
-                        distance
-                    }
-                }
+            if (distanceSum < 10000) {
+                safeRegionSize += 1
             }
         }
     }
 
-    const points = {}
-    const gems = {} // https://g.co/kgs/smVdzQ
-    let maxArea = 0
-    for (let i = 0; i < bound; i += 1) {
-        for (let j = 0; j < bound; j += 1) {
-            if (grid[i][j].id === '.') {
-                continue
-            }
-
-            if (gems[grid[i][j].id] || i === bound - 1 || i === 0 || j === bound - 1 || j === 0) {
-                gems[grid[i][j].id] = true
-
-                if (maxArea === points[grid[i][j].id]) {
-                    points[grid[i][j].id] = null
-                    maxArea = 0
-
-                    Object.keys(points).forEach(id => {
-                        maxArea = Math.max(points[id], maxArea)
-                    })
-
-                }
-
-                continue
-            }
-
-            points[grid[i][j].id] = points[grid[i][j].id] ? points[grid[i][j].id] + 1 : 1
-            maxArea = Math.max(points[grid[i][j].id], maxArea)
-        }
-    }
-
-    console.log(maxArea)
+    console.log(safeRegionSize)
 }
 
 main()
