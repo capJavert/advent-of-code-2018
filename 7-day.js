@@ -2,7 +2,29 @@ const { getInput } = require('./utils')
 
 const path = []
 const deps = {}
-let ids = []
+const ids = []
+const workers = [{ job: null, left: 0 }, { job: null, left: 0 }, { job: null, left: 0 }, { job: null, left: 0 }, { job: null, left: 0 }]
+const progress = {}
+
+function getFreeWorkers() {
+    const free = null
+    return workers.reduce((free, worker) => {
+        if (worker.job) {
+            worker.left -= 1
+
+            if (!worker.left) {
+                path.push(worker.job)
+                delete progress[worker.job]
+                worker.job = null
+            }
+        }
+
+        if (!worker.job) {
+            free.push(worker)
+        }
+        return free
+    }, [])
+}
 
 async function main() {
     const data = await getInput('https://pastebin.com/raw/PkDeVV6L')
@@ -23,9 +45,33 @@ async function main() {
             ids.push(data[1])
         }
     })
+    ids.sort()
+    const values = ids.reduce((acc, id, index) => {
+        acc[id] = index + 61
+        return acc
+    }, {})
 
-    assemble()
-    console.log(path.join(''))
+    let time = 0
+    while (path.length < ids.length) {
+        const freeWorkers = getFreeWorkers()
+        const jobs = assemble()
+
+        if (jobs.length) {
+            freeWorkers.forEach((worker, index) => {
+                const job = jobs[index]
+
+                if (job) {
+                    worker.job = job
+                    worker.left = values[job]
+                    progress[job] = true
+                }
+            })
+        }
+
+        time += 1
+    }
+
+    console.log(time - 1)
 }
 
 // https://youtu.be/hA6hldpSTF8
@@ -48,11 +94,15 @@ function assemble() {
     })
 
     available.sort()
-    path.push(available.shift())
 
-    if (path.length < ids.length) {
-        assemble()
+    const jobs = []
+    for (job of available) {
+        if (!progress[job]) {
+            jobs.push(job)
+        }
     }
+
+    return jobs
 }
 
 main()
