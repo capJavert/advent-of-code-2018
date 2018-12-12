@@ -1,5 +1,14 @@
 const { getInput } = require('./utils')
 
+function sum(pots) {
+    return Object.keys(pots).reduce((acc, key) => {
+        if (pots[key] === '#') {
+            acc += +key
+        }
+        return acc
+    }, 0)
+}
+
 async function main() {
     const data = await getInput('https://pastebin.com/raw/yULnjSWW')
     let input = data.split(/\r?\n/)
@@ -26,7 +35,10 @@ async function main() {
         return acc
     }, {})
 
-    for (let i = 1; i <= 20; i += 1) {
+    let lastSum = sum(pots)
+    let lastDiff = 0
+
+    for (let i = 1; i <= 300; i += 1) {
         const nextPots = {...pots}
         let nextLeftMostPlant = leftMostPlant
         let nextRightMostPlant = rightMostPlant
@@ -46,14 +58,18 @@ async function main() {
         pots = {...nextPots}
         leftMostPlant = nextLeftMostPlant
         rightMostPlant = nextRightMostPlant
-    }
 
-    console.log(Object.keys(pots).reduce((acc, key) => {
-        if (pots[key] === '#') {
-            acc += +key
+        const newSum = sum(pots)
+        const diff = newSum - lastSum
+
+        if (diff === lastDiff) {
+            console.log(newSum + (50000000000 - i) * diff)
+            break
         }
-        return acc
-    }, 0))
+
+        lastSum = newSum
+        lastDiff = diff
+    }
 }
 
 main()
