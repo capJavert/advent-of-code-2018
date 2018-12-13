@@ -217,6 +217,10 @@ async function main() {
         schedule.carts.sort(compareByXy)
 
         for (let [index, oldCart] of schedule.carts.entries()) {
+            if (oldCart.hasCrashed) {
+                continue
+            }
+
             const cart = {...oldCart}
             let newCart = null
             const pos = schedule.map[cart.cp()]
@@ -238,14 +242,25 @@ async function main() {
                     break
             }
 
-            schedule.carts.forEach(eC => {
-                if (eC.cp() === newCart.cp()) {
-                    console.log(eC.cp())
-                    collision = true
+            schedule.carts.forEach((eC, eI) => {
+                if (eC.cp() === newCart.cp() && !eC.hasCrashed) {
+                    eC.hasCrashed = true
+                    newCart.hasCrashed = true
                 }
             })
 
             schedule.carts[index] = {...newCart}
+        }
+
+        const carts = schedule.carts.reduce((acc, cart) => {
+            if (!cart.hasCrashed) {
+                acc.push(cart)
+            }
+            return acc
+        }, [])
+        if (carts.length === 1) {
+            console.log(carts[0].cp())
+            break
         }
     }
 }
