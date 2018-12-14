@@ -5,8 +5,8 @@ async function main() {
     let mario = 0
     let luigi = 1
 
-    let steps = input
-    while (steps > -10) {
+    let steps = 0
+    while (true) {
         const newRecepies = (recepies[mario] + recepies[luigi] + '').split('')
         newRecepies.forEach(recepie => {
             recepies.push(+recepie)
@@ -15,10 +15,13 @@ async function main() {
         mario = (mario + (recepies[mario] + 1)) % recepies.length
         luigi = (luigi + (recepies[luigi] + 1)) % recepies.length
 
-        steps -= newRecepies.length
+        if (recepies.length % 1000000 === 0) {
+            if (recepies.join('').indexOf(input + '') > -1) {
+                console.log(recepies.join('').indexOf(input + ''))
+                break
+            }
+        }
     }
-
-    console.log(recepies.slice(input, input + 10).join(''))
 }
 
 main()
