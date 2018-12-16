@@ -21,6 +21,7 @@
   },
   "homepage": "https://github.com/capJavert/advent-of-code-2018#readme",
   "dependencies": {
-    "axios": "^0.18.0"
+    "axios": "^0.18.0",
+    "node-dijkstra": "^2.5.0"
   }
 }
