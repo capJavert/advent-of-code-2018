@@ -4,29 +4,32 @@ async function main() {
     const data = await getInput('https://pastebin.com/raw/mLpP30yb')
     let input = data.split(/\r?\n/)
 
-    const samples = input.reduce((acc, line) => {
+    const intel = input.reduce((acc, line) => {
         if (line.length > 0) {
             if (line.startsWith('Before')) {
-                let sample = acc[acc.length - 1]
+                let sample = acc.samples[acc.samples.length - 1]
                 if (sample.read) {
                     sample = {}
-                    acc.push(sample)
+                    acc.samples.push(sample)
                 }
                 sample.before = { ...eval(line.replace('Before: ', '')) }
             } else if (line.startsWith('After')) {
-                let sample = acc[acc.length - 1]
+                let sample = acc.samples[acc.samples.length - 1]
                 sample.after = { ...eval(line.replace('After: ', '')) }
                 sample.read = true
             } else {
-                let sample = acc[acc.length - 1]
+                let sample = acc.samples[acc.samples.length - 1]
+                const instruction = { ...line.split(' ').map(item => +item) }
 
                 if (!sample.read) {
-                    sample.instruction = { ...line.split(' ').map(item => +item) }
+                    sample.instruction = instruction
+                } else {
+                    acc.code.push(instruction)
                 }
             }
         }
         return acc
-    }, [{}])
+    }, { samples: [{}], code: [] })
 
     const mutations = (r, i) => ({
         addr: {
@@ -55,11 +58,11 @@ async function main() {
         },
         borr: {
             ...r,
-            [i[3]]: r[i[1]] & r[i[2]]
+            [i[3]]: r[i[1]] | r[i[2]]
         },
         bori: {
             ...r,
-            [i[3]]: r[i[1]] & i[2]
+            [i[3]]: r[i[1]] | i[2]
         },
         setr: {
             ...r,
@@ -96,22 +99,39 @@ async function main() {
     })
 
     let x3Samples = 0
-    samples.forEach(sample => {
-        let matchCount = 0
-        const result = mutations(sample.before, sample.instruction)
+    let instructionsMap = { banr: 6 } // blocker assigned here
 
-        Object.keys(result).forEach(instruction => {
-            if (JSON.stringify(result[instruction]) === JSON.stringify(sample.after)) {
-                matchCount += 1
+    while(Object.keys(instructionsMap).length < 16) {
+        intel.samples.forEach(sample => {
+            let matches = []
+            const result = mutations(sample.before, sample.instruction)
+
+            Object.keys(result).forEach(instruction => {
+                if (JSON.stringify(result[instruction]) === JSON.stringify(sample.after)) {
+                    if (!instructionsMap[instruction]) {
+                        matches.push(instruction)
+                    }
+                }
+            })
+
+            if (matches.length === 1 && !instructionsMap[matches[0]]) {
+                instructionsMap[matches[0]] = sample.instruction[0]
             }
         })
+    }
 
-        if (matchCount > 2) {
-            x3Samples += 1
-        }
+    instructionsMap['banr'] = 0 // blocker reassigned here
+    instructionsMap = Object.keys(instructionsMap).reduce((acc, instruction) => {
+        acc[instructionsMap[instruction]] = instruction
+        return acc
+    }, {})
+
+    let registers = { ...[0, 0, 0, 0] }
+    intel.code.forEach(instruction => {
+        registers = mutations(registers, instruction)[instructionsMap[instruction, instruction[0]]]
     })
 
-    console.log(x3Samples)
+    console.log(registers[0])
 }
 
 main()
