@@ -26,14 +26,16 @@ function currentState(map, boundsI, boundsJ, c, silent) {
     }
 }
 
+let boundsX = [Infinity, 0]
+let boundsY = [Infinity, 0]
+let veins = null
+
 async function main() {
     //const data = await getInput('https://pastebin.com/raw/x76aZV0s')
     const data = await getInput('https://pastebin.com/raw/rdbr3Rp2')
     let input = data.split(/\r?\n/)
 
-    let boundsX = [Infinity, 0]
-    let boundsY = [Infinity, 0]
-    let veins = input.reduce((acc, line) => {
+    veins = input.reduce((acc, line) => {
         let x = 0
         let y = 0
         let xData = line.split('x=')
@@ -88,139 +90,41 @@ async function main() {
     // console.log(veins)
 
     const visited = {}
-    let c0 = 0
-    let c1 = 500
-    let canMove = true
-    let stream = []
-    let marianaTrench = false // https://goo.gl/RvNq8K
-    let reset = null
-    floaded = {}
-    let lastDirection = 'down'
-    while (canMove) {
-        // console.log(c0, c1)
-        currentState(veins, boundsY, boundsX, [c0, c1])
-        pause()
-        canMove = false
+    let c = [0, 500]
+    let hasCapacity = true
+    /* while (hasCapacity) {
+        hasCapacity = false
 
-        console.log(floaded, lastDirection)
+        let canMove = true
+        while (canMove) {
+            currentState(veins, boundsY, boundsX, [...c])
+            pause()
+            canMove = false
 
-        /* if (lastDirection != 'up') {
-            if (floaded[`${c0 + 1}`]) {
-                const c = stream.pop()
-                console.log(c)
-                c0 = c[0]
-                c1 = c[1]
+
+            if (down(c, veins) === '#') {
+                c = down(c, veins, true)
                 canMove = true
-                floaded[`${c0 + 1}`] = true
-                lastDirection = 'up'
-                console.log('llalala')
+                hasCapacity = true
+                continue
+            } else if (down(c, veins) === '~') {
+
+            }
+            if (['#', '~'].indexOf(left(c, veins)) === -1) {
+                c = left(c, veins, true)
+                canMove = true
+                hasCapacity = true
+                continue
+            } else if (['#', '~'].indexOf(right(c, veins)) === -1) {
+                c = right(c, veins, true)
+                canMove = true
+                hasCapacity = true
                 continue
             }
-        } */
-
-        /* if (lastDirection !== 'reset') {
-            if (((veins[c0 + 1][c1 - 1] === '.' || veins[c0 + 1][c1 - 1] === undefined) &&
-                (veins[c0][c1 - 1] === '.' || veins[c0][c1 - 1] === undefined) &&
-                (veins[c0 + 1] && veins[c0 + 1][c1] === '~') &&
-                (veins[c0 + 2] && veins[c0 + 2][c1] === '~') &&
-                reset) ||
-                floaded[`${c0}`]
-            ) {
-                veins = JSON.parse(reset.veins)
-                stream = JSON.parse(reset.stream)
-                const c = reset.c
-                c0 = c[0]
-                c1 = c[1]
-                floaded[`${c[0]}`] = true
-                canMove = true
-                lastDirection = 'reset'
-                reset = null
-                continue
-            }
-
-            if (((veins[c0 + 1][c1 + 1] === '.' || veins[c0 + 1][c1 + 1] === undefined) &&
-                (veins[c0][c1 + 1] === '.' || veins[c0][c1 + 1] === undefined) &&
-                (veins[c0 + 1] && veins[c0 + 1][c1] === '~') &&
-                (veins[c0 + 2] && veins[c0 + 2][c1] === '~') &&
-                reset) ||
-                floaded[`${c0}`]
-            ) {
-                veins = JSON.parse(reset.veins)
-                stream = JSON.parse(reset.stream)
-                const c = reset.c
-                c0 = c[0]
-                c1 = c[1]
-                floaded[`${c[0]}`] = true
-                canMove = true
-                lastDirection = 'reset'
-                continue
-            }
-        }*/
-
-        if (['#', '~'].indexOf(veins[c0 + 1][c1]) === -1 && c0 + 1 <= boundsY[1]) {
-            stream.push([c0, c1])
-            if (['left', 'right'].indexOf(lastDirection) > -1) {
-                floaded[`${c0}`] = true
-            }
-            c0 += 1
-            veins[c0][c1] = '~'
-            canMove = true
-            marianaTrench = false
-            lastDirection = 'down'
-            continue
-        } else if (c0 + 1 > boundsY[1]) {
-            marianaTrench = true
         }
-
-        /* if (c1 === 499 && c0 === 4) {
-            console.log(['#', '~'].indexOf(veins[c0][c1 - 1]) === -1 &&
-            ['#', '~'].indexOf(veins[c0 + 1][c1 - 1]) > -1 &&
-            c1 - 1 >= boundsX[0])
-            break
-        } */
-
-        if (
-            ['#', '~'].indexOf(veins[c0][c1 - 1]) === -1 &&
-            (['#', '~'].indexOf(veins[c0 + 1][c1 - 1]) > -1 || veins[c0 + 1][c1] === '#') &&
-            !floaded[`${c0 + 1}`]
-        ) {
-            stream.push([c0, c1])
-            c1 -= 1
-            veins[c0][c1] = '~'
-            canMove = true
-            lastDirection = 'left'
-            continue
-        } else if(!(['#', '~'].indexOf(veins[c0 + 1][c1 - 1]) > -1)) {
-            // console.log(c)
-            // break
-        }
-
-        if (
-            ['#', '~'].indexOf(veins[c0][c1 + 1]) === -1 &&
-            (['#', '~'].indexOf(veins[c0 + 1][c1 + 1]) > -1 || veins[c0 + 1][c1] === '#') &&
-            !floaded[`${c0 + 1}`]
-        ) {
-            stream.push([c0, c1])
-            c1 += 1
-            veins[c0][c1] = '~'
-            canMove = true
-            lastDirection = 'right'
-            continue
-        }
-
-        if (stream.length) {
-            // floaded[`${c0 + 1}`] = false
-            const c = stream.pop()
-            c0 = c[0]
-            c1 = c[1]
-            reset = { veins: JSON.stringify(veins), c: [...c], stream: JSON.stringify(stream) }
-            canMove = true
-            lastDirection = 'up'
-        }
-
-        if (c0 === 0 && c1 === 500) {
-            break
-        }
+    } */
+    while (true) {
+        flow(c, 'down')
     }
 
     let water = 0
@@ -232,8 +136,57 @@ async function main() {
         })
     })
 
-    currentState(veins, boundsY, boundsX, [c0, c1])
+    currentState(veins, boundsY, boundsX, c)
     console.log(water)
+}
+
+function flow(c, d = 'down') {
+    currentState(veins, boundsY, boundsX, c)
+    pause()
+
+    if (c[0] <= boundsY[1]) {
+        if (['.', undefined].indexOf(down(c)) > -1) {
+            flow(down(c, true), 'down')
+        } else {
+            if (d === 'down') {
+                veins[c[0]][c[1]] = '~'
+                return
+            }
+
+            if (['.', undefined].indexOf(left(c)) > -1) {
+                flow(left(c, true), 'left')
+            } else if (['.', undefined].indexOf(down(left(c, true))) > -1) {
+                flow(down(left(c, true), true), 'dleft')
+            } else {
+                if (d === 'left') {
+                    veins[c[0]][c[1]] = '~'
+                    return
+                }
+            }
+            if (['.', undefined].indexOf(right(c)) > -1) {
+                flow(right(c, true), 'right')
+            } else if (['.', undefined].indexOf(down(right(c, true))) > -1) {
+                flow(down(right(c, true), true), 'dright')
+            } else {
+                if (d === 'right') {
+                    veins[c[0]][c[1]] = '~'
+                    return
+                }
+            }
+        }
+    }
+}
+
+function down(c, move) {
+    return !move ? veins[c[0] + 1][c[1]] : [c[0] + 1, c[1]]
+}
+
+function left(c, move) {
+    return !move ? veins[c[0]][c[1] - 1] : [c[0], c[1] - 1]
+}
+
+function right(c, move) {
+    return !move ? veins[c[0]][c[1] + 1] : [c[0], c[1] + 1]
 }
 
 main()
