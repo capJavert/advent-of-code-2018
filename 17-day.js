@@ -1,7 +1,7 @@
 const { getInput, pause } = require('./utils')
 
 function currentState(map, boundsI, boundsJ, c, silent) {
-    for (let i = boundsI[0] - 1; i <= boundsI[1]; i += 1) {
+    for (let i = 0; i <= boundsI[1] + 1; i += 1) {
         // console.log(i)
         let line = ''
 
@@ -27,7 +27,7 @@ function currentState(map, boundsI, boundsJ, c, silent) {
 }
 
 async function main() {
-    // const data = await getInput('https://pastebin.com/raw/x76aZV0s')
+    //const data = await getInput('https://pastebin.com/raw/x76aZV0s')
     const data = await getInput('https://pastebin.com/raw/rdbr3Rp2')
     let input = data.split(/\r?\n/)
 
@@ -94,59 +94,74 @@ async function main() {
     let stream = []
     let marianaTrench = false // https://goo.gl/RvNq8K
     let reset = null
-    const floadedLeft = {}
-    const floadedRight = {}
+    floaded = {}
     let lastDirection = 'down'
     while (canMove) {
-        console.log(c0, c1)
+        // console.log(c0, c1)
         currentState(veins, boundsY, boundsX, [c0, c1])
         pause()
         canMove = false
 
-        console.log(floadedLeft, floadedRight)
-        if (floadedRight[`${c0},${c1}`] && floadedLeft[`${c0},${c1}`]) {
-            const c = stream.pop()
-            console.log(c)
-            c0 = c[0]
-            c1 = c[1]
-            canMove = true
-            continue
-        }
+        console.log(floaded, lastDirection)
 
-        if (lastDirection === 'left' || lastDirection === 'right') {
-            if ((veins[c0 + 1][c1 - 1] === '.' || veins[c0 + 1][c1 - 1] === undefined) &&
+        /* if (lastDirection != 'up') {
+            if (floaded[`${c0 + 1}`]) {
+                const c = stream.pop()
+                console.log(c)
+                c0 = c[0]
+                c1 = c[1]
+                canMove = true
+                floaded[`${c0 + 1}`] = true
+                lastDirection = 'up'
+                console.log('llalala')
+                continue
+            }
+        } */
+
+        /* if (lastDirection !== 'reset') {
+            if (((veins[c0 + 1][c1 - 1] === '.' || veins[c0 + 1][c1 - 1] === undefined) &&
                 (veins[c0][c1 - 1] === '.' || veins[c0][c1 - 1] === undefined) &&
                 (veins[c0 + 1] && veins[c0 + 1][c1] === '~') &&
                 (veins[c0 + 2] && veins[c0 + 2][c1] === '~') &&
-                reset
+                reset) ||
+                floaded[`${c0}`]
             ) {
                 veins = JSON.parse(reset.veins)
+                stream = JSON.parse(reset.stream)
                 const c = reset.c
                 c0 = c[0]
                 c1 = c[1]
-                floadedLeft[`${c[0]},${c[1]}`] = true
+                floaded[`${c[0]}`] = true
                 canMove = true
+                lastDirection = 'reset'
+                reset = null
                 continue
             }
 
-            if ((veins[c0 + 1][c1 + 1] === '.' || veins[c0 + 1][c1 + 1] === undefined) &&
+            if (((veins[c0 + 1][c1 + 1] === '.' || veins[c0 + 1][c1 + 1] === undefined) &&
                 (veins[c0][c1 + 1] === '.' || veins[c0][c1 + 1] === undefined) &&
                 (veins[c0 + 1] && veins[c0 + 1][c1] === '~') &&
                 (veins[c0 + 2] && veins[c0 + 2][c1] === '~') &&
-                reset
+                reset) ||
+                floaded[`${c0}`]
             ) {
                 veins = JSON.parse(reset.veins)
+                stream = JSON.parse(reset.stream)
                 const c = reset.c
                 c0 = c[0]
                 c1 = c[1]
-                floadedRight[`${c[0]},${c[1]}`] = true
+                floaded[`${c[0]}`] = true
                 canMove = true
+                lastDirection = 'reset'
                 continue
             }
-        }
+        }*/
 
-        if (['#', '~'].indexOf(veins[c0 + 1][c1]) === -1 && c0 + 1 < boundsY[1]) {
+        if (['#', '~'].indexOf(veins[c0 + 1][c1]) === -1 && c0 + 1 <= boundsY[1]) {
             stream.push([c0, c1])
+            if (['left', 'right'].indexOf(lastDirection) > -1) {
+                floaded[`${c0}`] = true
+            }
             c0 += 1
             veins[c0][c1] = '~'
             canMove = true
@@ -167,7 +182,7 @@ async function main() {
         if (
             ['#', '~'].indexOf(veins[c0][c1 - 1]) === -1 &&
             (['#', '~'].indexOf(veins[c0 + 1][c1 - 1]) > -1 || veins[c0 + 1][c1] === '#') &&
-            !floadedLeft[`${c0},${c1}`]
+            !floaded[`${c0 + 1}`]
         ) {
             stream.push([c0, c1])
             c1 -= 1
@@ -183,7 +198,7 @@ async function main() {
         if (
             ['#', '~'].indexOf(veins[c0][c1 + 1]) === -1 &&
             (['#', '~'].indexOf(veins[c0 + 1][c1 + 1]) > -1 || veins[c0 + 1][c1] === '#') &&
-            !floadedRight[`${c0},${c1}`]
+            !floaded[`${c0 + 1}`]
         ) {
             stream.push([c0, c1])
             c1 += 1
@@ -194,16 +209,31 @@ async function main() {
         }
 
         if (stream.length) {
+            // floaded[`${c0 + 1}`] = false
             const c = stream.pop()
             c0 = c[0]
             c1 = c[1]
-            reset = { veins: JSON.stringify(veins), c: [c0, c1] }
+            reset = { veins: JSON.stringify(veins), c: [...c], stream: JSON.stringify(stream) }
             canMove = true
             lastDirection = 'up'
         }
+
+        if (c0 === 0 && c1 === 500) {
+            break
+        }
     }
 
-    console.log(c0, c1)
+    let water = 0
+    Object.keys(veins).forEach(i => {
+        Object.keys(veins[i]).forEach(j => {
+            if (veins[i][j] === '~') {
+                water += 1
+            }
+        })
+    })
+
+    currentState(veins, boundsY, boundsX, [c0, c1])
+    console.log(water)
 }
 
 main()
