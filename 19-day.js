@@ -85,7 +85,7 @@ async function main() {
     const pointer = code.shift()[1]
     let registers = { ...[0, 0, 0, 0, 0, 0] }
 
-    while (registers[pointer] > -1 && registers[pointer] < code.length - 1) {
+    while (registers[pointer] > -1 && registers[pointer] < code.length) {
         const instruction = code[registers[pointer]]
         registers = exec(registers, instruction)
         registers[pointer] += 1
