@@ -3,9 +3,10 @@ const { getInput } = require('./utils')
 const paths = []
 
 async function main() {
-    // const data = await getInput('https://pastebin.com/raw/fY4z5gpR')
+    const data = await getInput('https://pastebin.com/raw/fY4z5gpR')
     // const data = 'ENNWSWW(NEWS|)SSSEEN(WNSE|)EE(SWEN|)NNN'
-    const data = 'ENWWW(NEEE|SSE(EE|N))'
+    // const data = 'ENWWW(NEEE|SSE(EE|N))'
+    // const data = 'WSSEESWWWNW(S|NENNEEEENN(ESSSSW(NWSW|SSEN)|WSWWN(E|WWS(E|SS))))'
     // ENWWWNEEE
     // ENWWWSSEEE
     // ENWWWSSEN
@@ -13,8 +14,8 @@ async function main() {
 
     let path = ''
     const stack = []
-    let savedPath = null
-    let lastParent = stack
+    const rootParent = { parent: null, path: '', branches: [] }
+    let lastParent = rootParent
     for (let index = 0; index < input.length; index += 1) {
         const c = input[index]
 
@@ -23,49 +24,37 @@ async function main() {
         }
 
         if (c === '(') {
-            if (lastParent) {
-                lastParent.push({ path, branches: [] })
-                lastParent = lastParent[lastParent.length - 1].branches
-            } else {
-                stack.push({ path, branches: [] })
-                lastParent = stack
-            }
+            lastParent.branches.push({ parent: lastParent, path, branches: [] })
+            lastParent = lastParent.branches[lastParent.branches.length - 1]
             path = ''
             continue
         }
 
         if (c === '|') {
-            console.log(lastParent)
-            lastParent.push(path)
+            // console.log(lastParent)
+            if (input[index + 1] === ')') {
+                lastParent.branches.push({ parent: lastParent, path, branches: [], isOptional: true })
+                lastParent = lastParent.branches[lastParent.branches.length - 1]
+            } else {
+                lastParent.branches.push({ parent: lastParent, path, branches: [] })
+            }
+
+            path = ''
             continue
         }
 
         if (c === ')') {
-            /* if (path.length) {
-                paths.push(stack.join('') + path)
-            } */
-
-
-            // path += stack.pop()
+            if (path.length) {
+                lastParent.branches.push({ parent: lastParent, path, branches: [] })
+            }
+            path = ''
             continue
         }
 
         path += c
     }
 
-    stack.forEach(e => {
-        console.log(e)
-        e.branches.forEach(e2 => {
-            console.log('   ' + e2)
-        })
-    })
-
-    return
-
-    if (!paths.length) {
-        paths.push(path)
-    }
-
+    getChildren('', rootParent, 0)
     console.log(paths)
 
     let maxDoors = 0
@@ -76,8 +65,35 @@ async function main() {
     console.log(maxDoors)
 }
 
-function getChildren(element){
-    
+function getChildren(path, element, delimiter) {
+    if (element.isOptional) {
+        if (!element.branches.length) {
+            paths.push(path)
+            return
+        }
+
+        element.branches.forEach(child => {
+            // console.log(Array(delimiter).fill(' ').join(''), child.path)
+            if (child) {
+                getChildren(path, child, delimiter + 2)
+            }
+        })
+    }
+
+    path += element.path
+
+    if (!element.branches.length) {
+        paths.push(path)
+        return
+    }
+
+    element.branches.forEach(child => {
+        // console.log(Array(delimiter).fill(' ').join(''), child.path)
+        if (child) {
+            getChildren(path, child, delimiter + 2)
+        }
+    })
+
 }
 
 main()
